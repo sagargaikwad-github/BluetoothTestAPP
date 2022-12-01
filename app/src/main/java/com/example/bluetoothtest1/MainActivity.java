@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     String[] DeviceName = {"Select Device", "A", "B", "C"};
     Button serverStartBTN, clientStartBTN;
     private static final String APP_NAME = "Bluetooth App";
-    private static final java.util.UUID UUID = java.util.UUID.fromString("9bbb4aaa-c772-4e30-853a-e6a64f5e30f3");
+    // private static final java.util.UUID UUID = java.util.UUID.fromString("9bbb4aaa-c772-4e30-853a-e6a64f5e30f3");
     BluetoothAdapter bluetoothAdapter;
     TextView statusOfBluetooth, CounterTV;
 
@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     CountDownTimer countDownTimer;
 
 
+    String ThreadName = "A";
     static final int STATE_CONNECTING = 1;
     static final int STATE_CONNECTED = 3;
     static final int STATE_CONNECTION_FAILED = 4;
@@ -75,11 +76,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         spinner.setOnItemSelectedListener(MainActivity.this);
 
 
-//        uuidList.clear();
-//        uuidList.add(UUID.fromString("fe964a9c-184c-11e6-b6ba-3e1d05defe78"));
-//        uuidList.add(UUID.fromString("fe964e02-184c-11e6-b6ba-3e1d05defe78"));
-//        uuidList.add(UUID.fromString("fe964f9c-184c-11e6-b6ba-3e1d05defe78"));
-//        uuidList.add(UUID.fromString("fe965438-184c-11e6-b6ba-3e1d05defe78"));
+        uuidList.clear();
+        uuidList.add(UUID.fromString("fe964a9c-184c-11e6-b6ba-3e1d05defe78"));
+        uuidList.add(UUID.fromString("fe964e02-184c-11e6-b6ba-3e1d05defe78"));
+        uuidList.add(UUID.fromString("fe964f9c-184c-11e6-b6ba-3e1d05defe78"));
+        uuidList.add(UUID.fromString("fe965438-184c-11e6-b6ba-3e1d05defe78"));
     }
 
     private void coundownTimer() {
@@ -90,7 +91,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 seconds = (int) (l / 1000);
                 try {
                     CounterTV.setText(String.valueOf(seconds));
-
                     sendRecieve.write(CounterTV.getText().toString().getBytes());
 
                 } catch (Exception e) {
@@ -124,6 +124,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, ClientActivity.class);
+                intent.putExtra("TN", "A");
                 startActivity(intent);
             }
         });
@@ -159,8 +160,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(intent, 100);
         } else {
-            ServerClass serverClass = new ServerClass();
-            serverClass.start();
+            ServerClassA serverClassA = new ServerClassA();
+            serverClassA.start();
         }
     }
 
@@ -168,6 +169,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
         if (i != 0) {
             Toast.makeText(this, DeviceName[i], Toast.LENGTH_SHORT).show();
+            ThreadName = DeviceName[i];
         }
     }
 
@@ -180,20 +182,85 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 100 && resultCode == RESULT_OK) {
-            ServerClass serverClass = new ServerClass();
-            serverClass.start();
+            ServerClassA serverClassA = new ServerClassA();
+            serverClassA.start();
         } else {
             Toast.makeText(MainActivity.this, "You need to Turn on Bluetooth", Toast.LENGTH_SHORT).show();
         }
     }
 
-    public class ServerClass extends Thread {
+//    public class ServerClass extends Thread {
+//        private BluetoothServerSocket serverSocket;
+//
+//        @SuppressLint("MissingPermission")
+//        public ServerClass() {
+//            try {
+////                for (int i=0;i<uuidList.size();i++)
+////                {
+//                serverSocket = bluetoothAdapter.listenUsingRfcommWithServiceRecord(APP_NAME, uuidList.get(0));
+//                // }
+//
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//
+//        @SuppressLint("MissingPermission")
+//        public void run() {
+//            BluetoothSocket socket = null;
+//            while (true) {
+//                Message message1 = Message.obtain();
+//                message1.what = STATE_CONNECTING;
+//                handler.sendMessage(message1);
+//
+//                try {
+//
+//                    if (bluetoothAdapter.isEnabled() && serverSocket != null) {
+//                        socket = serverSocket.accept();
+//                        DevName = socket.getRemoteDevice().getName();
+//
+//                        socket.close();
+//
+//                        Message message = Message.obtain();
+//                        message.what = STATE_CONNECTED;
+//                        handler.sendMessage(message);
+//
+//                        sendRecieve = new ClientActivity.SendRecieve(socket);
+//                        sendRecieve.start();
+//                    }
+//
+//                } catch (IOException e) {
+//
+//                }
+//
+//                if (socket != null) {
+//                    try {
+//                        serverSocket.close();
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                    break;
+//                }
+//            }
+//        }
+//
+//        public void cancel() {
+//            try {
+//                serverSocket.close();
+//            } catch (IOException e) {
+//                Log.e(TAG, "Could not close the connect socket", e);
+//            }
+//        }
+//
+//    }
+
+    public class ServerClassA extends Thread {
         private BluetoothServerSocket serverSocket;
 
         @SuppressLint("MissingPermission")
-        public ServerClass() {
+        public ServerClassA() {
             try {
-                serverSocket = bluetoothAdapter.listenUsingRfcommWithServiceRecord(APP_NAME, UUID);
+                serverSocket = bluetoothAdapter.listenUsingRfcommWithServiceRecord(APP_NAME, uuidList.get(0));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -203,36 +270,36 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         public void run() {
             BluetoothSocket socket = null;
             while (true) {
-                    Message message1 = Message.obtain();
-                    message1.what = STATE_CONNECTING;
-                    handler.sendMessage(message1);
+                Message message1 = Message.obtain();
+                message1.what = STATE_CONNECTING;
+                handler.sendMessage(message1);
 
+                try {
+                    if(bluetoothAdapter.isEnabled() && serverSocket!=null) {
+                        socket = serverSocket.accept();
+
+                        Message message = Message.obtain();
+                        message.what = STATE_CONNECTED;
+                        handler.sendMessage(message);
+
+                        DevName = socket.getRemoteDevice().getName();
+
+                        sendRecieve = new ClientActivity.SendRecieve(socket);
+                        sendRecieve.start();
+                    }
+
+                } catch (IOException e) {
+
+                }
+
+                if (socket != null) {
                     try {
-                        if(bluetoothAdapter.isEnabled() && serverSocket!=null) {
-                            socket = serverSocket.accept();
-
-                            Message message = Message.obtain();
-                            message.what = STATE_CONNECTED;
-                            handler.sendMessage(message);
-
-                            DevName = socket.getRemoteDevice().getName();
-
-                            sendRecieve = new ClientActivity.SendRecieve(socket);
-                            sendRecieve.start();
-                        }
-
+                        serverSocket.close();
                     } catch (IOException e) {
-
+                        e.printStackTrace();
                     }
-
-                    if (socket != null) {
-                        try {
-                            serverSocket.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        break;
-                    }
+                    break;
+                }
             }
         }
         public void cancel() {
@@ -244,6 +311,123 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
 
     }
+
+    public class ServerClassB extends Thread {
+        private BluetoothServerSocket serverSocket;
+
+        @SuppressLint("MissingPermission")
+        public ServerClassB() {
+            try {
+                serverSocket = bluetoothAdapter.listenUsingRfcommWithServiceRecord(APP_NAME, uuidList.get(1));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @SuppressLint("MissingPermission")
+        public void run() {
+            BluetoothSocket socket = null;
+            while (true) {
+                Message message1 = Message.obtain();
+                message1.what = STATE_CONNECTING;
+                handler.sendMessage(message1);
+
+                try {
+                    if(bluetoothAdapter.isEnabled() && serverSocket!=null) {
+                        socket = serverSocket.accept();
+
+                        Message message = Message.obtain();
+                        message.what = STATE_CONNECTED;
+                        handler.sendMessage(message);
+
+                        DevName = socket.getRemoteDevice().getName();
+
+                        sendRecieve = new ClientActivity.SendRecieve(socket);
+                        sendRecieve.start();
+                    }
+
+                } catch (IOException e) {
+
+                }
+
+                if (socket != null) {
+                    try {
+                        serverSocket.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                }
+            }
+        }
+        public void cancel() {
+            try {
+                serverSocket.close();
+            } catch (IOException e) {
+                Log.e(TAG, "Could not close the connect socket", e);
+            }
+        }
+
+    }
+
+    public class ServerClassC extends Thread {
+        private BluetoothServerSocket serverSocket;
+
+        @SuppressLint("MissingPermission")
+        public ServerClassC() {
+            try {
+                serverSocket = bluetoothAdapter.listenUsingRfcommWithServiceRecord(APP_NAME, uuidList.get(0));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @SuppressLint("MissingPermission")
+        public void run() {
+            BluetoothSocket socket = null;
+            while (true) {
+                Message message1 = Message.obtain();
+                message1.what = STATE_CONNECTING;
+                handler.sendMessage(message1);
+
+                try {
+                    if(bluetoothAdapter.isEnabled() && serverSocket!=null) {
+                        socket = serverSocket.accept();
+
+                        Message message = Message.obtain();
+                        message.what = STATE_CONNECTED;
+                        handler.sendMessage(message);
+
+                        DevName = socket.getRemoteDevice().getName();
+
+                        sendRecieve = new ClientActivity.SendRecieve(socket);
+                        sendRecieve.start();
+                    }
+
+                } catch (IOException e) {
+
+                }
+
+                if (socket != null) {
+                    try {
+                        serverSocket.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                }
+            }
+        }
+        public void cancel() {
+            try {
+                serverSocket.close();
+            } catch (IOException e) {
+                Log.e(TAG, "Could not close the connect socket", e);
+            }
+        }
+
+    }
+
 
     @Override
     protected void onPause() {
