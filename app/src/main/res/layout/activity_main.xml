@@ -36,7 +36,8 @@
                 android:layout_width="200dp"
                 android:layout_height="50dp"
                 android:spinnerMode="dialog"
-                android:text="Choose Device"></Spinner>
+                android:text="Choose Device">
+            </Spinner>
         </LinearLayout>
 
         <Button
@@ -63,6 +64,7 @@
             android:textSize="19sp"></TextView>
 
         <TextView
+            android:id="@+id/statusOfBluetooth"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Disconnected"
@@ -70,6 +72,7 @@
             android:textSize="24sp"></TextView>
 
         <TextView
+            android:id="@+id/counterTV"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Counter"
