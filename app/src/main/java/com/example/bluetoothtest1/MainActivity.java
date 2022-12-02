@@ -42,14 +42,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private static final String APP_NAME = "Bluetooth App";
     // private static final java.util.UUID UUID = java.util.UUID.fromString("9bbb4aaa-c772-4e30-853a-e6a64f5e30f3");
     BluetoothAdapter bluetoothAdapter;
-    TextView statusOfBluetooth, CounterTV;
 
-    ClientActivity.SendRecieve sendRecieve;
+    TextView statusOfBluetooth, CounterTV,CounterTVB,CounterTVC;
+
+    ClientActivity.SendRecieveA sendRecieveA;
+    ClientActivity.SendRecieveB sendRecieveB;
+    ClientActivity.SendRecieveC sendRecieveC;
 
     int Time = 50;
+    int TimeB = 500;
+    int TimeC = 50000;
     int seconds = 0;
     String DevName;
     CountDownTimer countDownTimer;
+
 
 
     String ThreadName = "A";
@@ -71,6 +77,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         statusOfBluetooth = findViewById(R.id.statusOfBluetooth);
         CounterTV = findViewById(R.id.counterTV);
 
+        CounterTVB = findViewById(R.id.counterTVB);
+        CounterTVC = findViewById(R.id.counterTVC);
+
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         spinner.setOnItemSelectedListener(MainActivity.this);
@@ -83,15 +92,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         uuidList.add(UUID.fromString("fe965438-184c-11e6-b6ba-3e1d05defe78"));
     }
 
-    private void coundownTimer() {
-
+    private void coundownTimerA() {
         countDownTimer = new CountDownTimer(Time * 1000, 1000) {
             @Override
             public void onTick(long l) {
                 seconds = (int) (l / 1000);
                 try {
                     CounterTV.setText(String.valueOf(seconds));
-                    sendRecieve.write(CounterTV.getText().toString().getBytes());
+                    sendRecieveA.write(CounterTV.getText().toString().getBytes());
+
+
 
                 } catch (Exception e) {
                     Log.e("TAG", e.toString());
@@ -100,10 +110,53 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             @Override
             public void onFinish() {
-                coundownTimer();
+                coundownTimerA();
             }
         }.start();
     }
+    private void coundownTimerB() {
+        countDownTimer = new CountDownTimer(TimeB * 1000, 1000) {
+            @Override
+            public void onTick(long l) {
+                seconds = (int) (l / 1000);
+                try {
+                    CounterTVB.setText(String.valueOf(seconds));
+                    sendRecieveB.write(CounterTVB.getText().toString().getBytes());
+
+
+
+                } catch (Exception e) {
+                    Log.e("TAG", e.toString());
+                }
+            }
+
+            @Override
+            public void onFinish() {
+                coundownTimerB();
+            }
+        }.start();
+    }
+    private void coundownTimerC() {
+        countDownTimer = new CountDownTimer(TimeC * 1000, 1000) {
+            @Override
+            public void onTick(long l) {
+                seconds = (int) (l / 1000);
+                try {
+                    CounterTVC.setText(String.valueOf(seconds));
+                    sendRecieveC.write(CounterTVC.getText().toString().getBytes());
+
+                } catch (Exception e) {
+                    Log.e("TAG", e.toString());
+                }
+            }
+
+            @Override
+            public void onFinish() {
+                coundownTimerC();
+            }
+        }.start();
+    }
+
 
     @Override
     protected void onResume() {
@@ -111,12 +164,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         ArrayAdapter arrayAdapter = new ArrayAdapter(this, com.google.android.material.R.layout.support_simple_spinner_dropdown_item, DeviceName);
         spinner.setAdapter(arrayAdapter);
 
-        coundownTimer();
+        coundownTimerA();
+        coundownTimerB();
+        coundownTimerC();
 
         serverStartBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                checkBluetoothIsOn();
+                //checkBluetoothIsOn();
+                ThreadName=spinner.getSelectedItem().toString();
+                startServer(ThreadName);
             }
         });
 
@@ -124,10 +181,29 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this, ClientActivity.class);
-                intent.putExtra("TN", "A");
+                intent.putExtra("TN", ThreadName);
                 startActivity(intent);
             }
         });
+    }
+
+    private void startServer(String servername) {
+
+        if(servername=="A")
+        {
+            ServerClassA serverClassA=new ServerClassA();
+            serverClassA.start();
+        }
+        if(servername=="B")
+        {
+            ServerClassB serverClassB=new ServerClassB();
+            serverClassB.start();
+        }
+        if(servername=="C")
+        {
+            ServerClassC serverClassC=new ServerClassC();
+            serverClassC.start();
+        }
     }
 
     Handler handler = new Handler(new Handler.Callback() {
@@ -153,22 +229,66 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     });
 
-
-    @SuppressLint("MissingPermission")
-    private void checkBluetoothIsOn() {
-        if (!bluetoothAdapter.isEnabled()) {
-            Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(intent, 100);
-        } else {
-            ServerClassA serverClassA = new ServerClassA();
-            serverClassA.start();
+    Handler handlerB = new Handler(new Handler.Callback() {
+        @SuppressLint("MissingPermission")
+        @Override
+        public boolean handleMessage(@NonNull Message message) {
+            switch (message.what) {
+                case STATE_CONNECTING:
+                    statusOfBluetooth.setText("Connecting...");
+                    break;
+                case STATE_CONNECTED:
+                    statusOfBluetooth.setText("Connected To : " + DevName);
+                    break;
+                case STATE_CONNECTION_FAILED:
+                    if (DevName == null) {
+                        statusOfBluetooth.setText("Connection Failed");
+                    } else {
+                        statusOfBluetooth.setText("Connection Failed.." + DevName);
+                    }
+                    break;
+            }
+            return true;
         }
-    }
+    });
+
+    Handler handlerC = new Handler(new Handler.Callback() {
+        @SuppressLint("MissingPermission")
+        @Override
+        public boolean handleMessage(@NonNull Message message) {
+            switch (message.what) {
+                case STATE_CONNECTING:
+                    statusOfBluetooth.setText("Connecting...");
+                    break;
+                case STATE_CONNECTED:
+                    statusOfBluetooth.setText("Connected To : " + DevName);
+                    break;
+                case STATE_CONNECTION_FAILED:
+                    if (DevName == null) {
+                        statusOfBluetooth.setText("Connection Failed");
+                    } else {
+                        statusOfBluetooth.setText("Connection Failed.." + DevName);
+                    }
+                    break;
+            }
+            return true;
+        }
+    });
+
+//    @SuppressLint("MissingPermission")
+//    private void checkBluetoothIsOn() {
+//        if (!bluetoothAdapter.isEnabled()) {
+//            Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+//            startActivityForResult(intent, 100);
+//        } else {
+//            ServerClassA serverClassA = new ServerClassA();
+//            serverClassA.start();
+//        }
+//    }
 
     @Override
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
         if (i != 0) {
-            Toast.makeText(this, DeviceName[i], Toast.LENGTH_SHORT).show();
             ThreadName = DeviceName[i];
         }
     }
@@ -178,16 +298,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 100 && resultCode == RESULT_OK) {
-            ServerClassA serverClassA = new ServerClassA();
-            serverClassA.start();
-        } else {
-            Toast.makeText(MainActivity.this, "You need to Turn on Bluetooth", Toast.LENGTH_SHORT).show();
-        }
-    }
+
+
+//    @Override
+//    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+//        if (requestCode == 100 && resultCode == RESULT_OK) {
+//            ServerClassA serverClassA = new ServerClassA();
+//            serverClassA.start();
+//        } else {
+//            Toast.makeText(MainActivity.this, "You need to Turn on Bluetooth", Toast.LENGTH_SHORT).show();
+//        }
+//    }
 
 //    public class ServerClass extends Thread {
 //        private BluetoothServerSocket serverSocket;
@@ -278,14 +400,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     if(bluetoothAdapter.isEnabled() && serverSocket!=null) {
                         socket = serverSocket.accept();
 
+
                         Message message = Message.obtain();
                         message.what = STATE_CONNECTED;
                         handler.sendMessage(message);
 
                         DevName = socket.getRemoteDevice().getName();
 
-                        sendRecieve = new ClientActivity.SendRecieve(socket);
-                        sendRecieve.start();
+                        sendRecieveA = new ClientActivity.SendRecieveA(socket);
+                        sendRecieveA.start();
                     }
 
                 } catch (IOException e) {
@@ -330,11 +453,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             while (true) {
                 Message message1 = Message.obtain();
                 message1.what = STATE_CONNECTING;
-                handler.sendMessage(message1);
+                handlerB.sendMessage(message1);
 
                 try {
                     if(bluetoothAdapter.isEnabled() && serverSocket!=null) {
                         socket = serverSocket.accept();
+
 
                         Message message = Message.obtain();
                         message.what = STATE_CONNECTED;
@@ -342,8 +466,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                         DevName = socket.getRemoteDevice().getName();
 
-                        sendRecieve = new ClientActivity.SendRecieve(socket);
-                        sendRecieve.start();
+                        sendRecieveB = new ClientActivity.SendRecieveB(socket);
+                        sendRecieveB.start();
+
                     }
 
                 } catch (IOException e) {
@@ -376,7 +501,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         @SuppressLint("MissingPermission")
         public ServerClassC() {
             try {
-                serverSocket = bluetoothAdapter.listenUsingRfcommWithServiceRecord(APP_NAME, uuidList.get(0));
+                serverSocket = bluetoothAdapter.listenUsingRfcommWithServiceRecord(APP_NAME, uuidList.get(2));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -388,7 +513,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             while (true) {
                 Message message1 = Message.obtain();
                 message1.what = STATE_CONNECTING;
-                handler.sendMessage(message1);
+                handlerC.sendMessage(message1);
 
                 try {
                     if(bluetoothAdapter.isEnabled() && serverSocket!=null) {
@@ -400,8 +525,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                         DevName = socket.getRemoteDevice().getName();
 
-                        sendRecieve = new ClientActivity.SendRecieve(socket);
-                        sendRecieve.start();
+                        sendRecieveC = new ClientActivity.SendRecieveC(socket);
+                        sendRecieveC.start();
                     }
 
                 } catch (IOException e) {

@@ -20,16 +20,18 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Set;
 
-public class ClientActivity extends AppCompatActivity {
+public class ClientActivity extends AppCompatActivity  {
     BluetoothAdapter bluetoothAdapter;
     Button showPairedDevices;
     static TextView DeviceA, DeviceAStatus, DeviceACounter;
@@ -48,6 +50,8 @@ public class ClientActivity extends AppCompatActivity {
     static final int STATE_MESSAGE_RECIEVED_FROM_B = 8;
     static final int STATE_MESSAGE_RECIEVED_FROM_C = 9;
     static String DeviceName;
+
+
 
     private final ArrayList<java.util.UUID> uuidList = new ArrayList<>();
 
@@ -78,9 +82,8 @@ public class ClientActivity extends AppCompatActivity {
         DeviceCStatus = findViewById(R.id.deviceCStatus);
         DeviceCCounter = findViewById(R.id.deviceCCounter);
 
-        //Bundle b = new Bundle();
-       // ThreadName = b.getString("TN");
-        Toast.makeText(this, ThreadName, Toast.LENGTH_SHORT).show();
+        Bundle b = new Bundle();
+        ThreadName = b.getString("TN");
 
 
         uuidList.clear();
@@ -88,8 +91,6 @@ public class ClientActivity extends AppCompatActivity {
         uuidList.add(UUID.fromString("fe964e02-184c-11e6-b6ba-3e1d05defe78"));
         uuidList.add(UUID.fromString("fe964f9c-184c-11e6-b6ba-3e1d05defe78"));
         uuidList.add(UUID.fromString("fe965438-184c-11e6-b6ba-3e1d05defe78"));
-
-
 
 
     }
@@ -110,24 +111,33 @@ public class ClientActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 if (bluetoothAdapter.isEnabled()) {
 
-                    if (ThreadName == "A") {
-                        ClientAClass connectThread = new ClientAClass(paired_device_array[i]);
-                        connectThread.start();
-                        DeviceAStatus.setText("Connecting");
-                        DeviceName = connectThread.device.getName();
+
+                    try {
+                        ClientAClass connectThreadA = new ClientAClass(paired_device_array[i]);
+                        connectThreadA.start();
+                    }catch (Exception e)
+                    {
+
                     }
-                    if (ThreadName == "B") {
-                        ClientBClass connectThread = new ClientBClass(paired_device_array[i]);
-                        connectThread.start();
-                        DeviceBStatus.setText("Connecting");
-//                        DeviceName = connectThread.device.getName();
+
+                    try {
+                        ClientBClass connectThreadB = new ClientBClass(paired_device_array[i]);
+                        connectThreadB.start();
+                    }catch (Exception e)
+                    {
+
                     }
-                    if (ThreadName == "C") {
-                        ClientCClass connectThread = new ClientCClass(paired_device_array[i]);
-                        connectThread.start();
-                        DeviceCStatus.setText("Connecting");
-//                        DeviceName = connectThread.device.getName();
-                    }
+
+                       try {
+                           ClientCClass connectThreadC = new ClientCClass(paired_device_array[i]);
+                           connectThreadC.start();
+
+                       }
+                       catch (Exception e)
+                       {
+
+                       }
+
 
                 } else {
                     Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -181,15 +191,47 @@ public class ClientActivity extends AppCompatActivity {
                     String tempMsgA = new String(readBuffA, 0, message.arg1);
                     DeviceACounter.setText(tempMsgA);
                     break;
+            }
+            return true;
+        }
+    });
+
+    static Handler handlerB = new Handler(new Handler.Callback() {
+        @SuppressLint("MissingPermission")
+        @Override
+        public boolean handleMessage(@NonNull Message message) {
+            switch (message.what) {
+                case STATE_CONNECTED:
+                    DeviceAStatus.setText("Connected To : " + DeviceName);
+                    break;
+                case STATE_CONNECTION_FAILED:
+                    DeviceAStatus.setText("Connection Failed..");
+                    break;
                 case STATE_MESSAGE_RECIEVED_FROM_B:
                     byte[] readBuffB = (byte[]) message.obj;
                     String tempMsgB = new String(readBuffB, 0, message.arg1);
                     DeviceBCounter.setText(tempMsgB);
                     break;
+            }
+            return true;
+        }
+    });
+
+    static Handler handlerC = new Handler(new Handler.Callback() {
+        @SuppressLint("MissingPermission")
+        @Override
+        public boolean handleMessage(@NonNull Message message) {
+            switch (message.what) {
+                case STATE_CONNECTED:
+                    DeviceAStatus.setText("Connected To : " + DeviceName);
+                    break;
+                case STATE_CONNECTION_FAILED:
+                    DeviceAStatus.setText("Connection Failed..");
+                    break;
                 case STATE_MESSAGE_RECIEVED_FROM_C:
                     byte[] readBuffC = (byte[]) message.obj;
                     String tempMsgC = new String(readBuffC, 0, message.arg1);
-                    DeviceACounter.setText(tempMsgC);
+                    DeviceCCounter.setText(tempMsgC);
                     break;
             }
             return true;
@@ -207,6 +249,8 @@ public class ClientActivity extends AppCompatActivity {
         }
     }
 
+
+
     private class ClientAClass extends Thread {
         private BluetoothDevice device;
         //private BluetoothSocket socket;
@@ -217,7 +261,9 @@ public class ClientActivity extends AppCompatActivity {
             try {
                 if (bluetoothAdapter.isEnabled()) {
                     for (int i = 0; i < uuidList.size(); i++) {
-                        socket = device.createRfcommSocketToServiceRecord(uuidList.get(0));
+                        socket = device.createRfcommSocketToServiceRecord(uuidList.get(i));
+                        return ;
+
                     }
                 }
             } catch (IOException e) {
@@ -230,12 +276,13 @@ public class ClientActivity extends AppCompatActivity {
             try {
                 socket.connect();
 
+
                 Message message = Message.obtain();
                 message.what = STATE_CONNECTED;
                 handler.sendMessage(message);
 
-                SendRecieve sendRecieve = new SendRecieve(socket);
-                sendRecieve.start();
+                SendRecieveA sendRecieveA = new SendRecieveA(socket);
+                sendRecieveA.start();
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -268,6 +315,7 @@ public class ClientActivity extends AppCompatActivity {
                 if (bluetoothAdapter.isEnabled()) {
                     for (int i = 0; i < uuidList.size(); i++) {
                         socket = device.createRfcommSocketToServiceRecord(uuidList.get(1));
+                        return;
                     }
                 }
             } catch (IOException e) {
@@ -282,7 +330,7 @@ public class ClientActivity extends AppCompatActivity {
 
                 Message message = Message.obtain();
                 message.what = STATE_CONNECTED;
-                handler.sendMessage(message);
+                handlerB.sendMessage(message);
 
                 SendRecieveB sendRecieveB = new SendRecieveB(socket);
                 sendRecieveB.start();
@@ -332,7 +380,7 @@ public class ClientActivity extends AppCompatActivity {
 
                 Message message = Message.obtain();
                 message.what = STATE_CONNECTED;
-                handler.sendMessage(message);
+                handlerC.sendMessage(message);
 
                 SendRecieveC sendRecieveC = new SendRecieveC(socket);
                 sendRecieveC.start();
@@ -357,13 +405,13 @@ public class ClientActivity extends AppCompatActivity {
         }
     }
 
-    public static class SendRecieve extends Thread {
+    public static class SendRecieveA extends Thread {
 
         private final BluetoothSocket bluetoothSocket;
         private final InputStream inputStream;
         private final OutputStream outputStream;
 
-        public SendRecieve(BluetoothSocket socket) {
+        public SendRecieveA(BluetoothSocket socket) {
             bluetoothSocket = socket;
             InputStream tempIn = null;
             OutputStream tempOut = null;
@@ -448,7 +496,7 @@ public class ClientActivity extends AppCompatActivity {
             while (true) {
                 try {
                     bytes = inputStream.read(buffer);
-                    handler.obtainMessage(STATE_MESSAGE_RECIEVED_FROM_B, bytes, -1, buffer).sendToTarget();
+                    handlerB.obtainMessage(STATE_MESSAGE_RECIEVED_FROM_B, bytes, -1, buffer).sendToTarget();
                 } catch (IOException e) {
                     e.printStackTrace();
 //                    Message message = Message.obtain();
@@ -511,7 +559,7 @@ public class ClientActivity extends AppCompatActivity {
             while (true) {
                 try {
                     bytes = inputStream.read(buffer);
-                    handler.obtainMessage(STATE_MESSAGE_RECIEVED_FROM_C, bytes, -1, buffer).sendToTarget();
+                    handlerC.obtainMessage(STATE_MESSAGE_RECIEVED_FROM_C, bytes, -1, buffer).sendToTarget();
                 } catch (IOException e) {
                     e.printStackTrace();
 //                    Message message = Message.obtain();
