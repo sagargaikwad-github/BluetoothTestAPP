@@ -55,8 +55,9 @@
             android:text="Client">
         </Button>
 
+
         <TextView
-            android:layout_marginTop="60dp"
+            android:layout_marginTop="40dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Status : "
@@ -76,7 +77,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Counter"
-            android:layout_marginTop="30dp"
+            android:visibility="gone"
+            android:layout_marginTop="10dp"
             android:textSize="30sp"></TextView>
 
         <TextView
@@ -84,7 +86,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Counter"
-            android:layout_marginTop="30dp"
+            android:visibility="gone"
+            android:layout_marginTop="10dp"
             android:textSize="30sp"></TextView>
 
 
@@ -93,7 +96,25 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Counter"
-            android:layout_marginTop="30dp"
+            android:visibility="gone"
+            android:layout_marginTop="10dp"
             android:textSize="30sp"></TextView>
+
+        <Button
+            android:id="@+id/fourthDeviceBTN"
+            android:layout_marginTop="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="4th Device">
+        </Button>
+        <TextView
+            android:id="@+id/fourthDeviceTV"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Total Count Recieved"
+            android:textColor="@color/black"
+            android:textSize="22sp">
+        </TextView>
     </LinearLayout>
+
 </LinearLayout>

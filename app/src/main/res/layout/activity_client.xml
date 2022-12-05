@@ -29,18 +29,7 @@
     <!--            android:text="Disconnected"></TextView>-->
     <!--    </LinearLayout>-->
 
-    <Button
-        android:id="@+id/showPairedDevices"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="30dp"
-        android:text="Show Paired Devices" />
 
-    <ListView
-        android:id="@+id/deviceListView"
-        android:layout_width="wrap_content"
-        android:layout_height="200dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -56,13 +45,13 @@
             android:gravity="center"
             android:orientation="vertical">
 
-            <TextView
+            <Button
                 android:id="@+id/deviceA"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Device A"
-                android:textColor="@color/black"
-                android:textSize="21sp"></TextView>
+                android:textColor="@color/white"
+                android:textSize="21sp"></Button>
 
             <TextView
                 android:id="@+id/deviceAStatus"
@@ -84,14 +73,17 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
+            android:layout_marginStart="5dp"
+
             android:orientation="vertical">
 
-            <TextView
+            <Button
+                android:id="@+id/deviceB"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Device B"
-                android:textColor="@color/black"
-                android:textSize="21sp"></TextView>
+                android:textColor="@color/white"
+                android:textSize="21sp"></Button>
 
             <TextView
                 android:id="@+id/deviceBStatus"
@@ -113,14 +105,16 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
+            android:layout_marginStart="5dp"
             android:orientation="vertical">
 
-            <TextView
+            <Button
+                android:id="@+id/deviceC"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Device C"
-                android:textColor="@color/black"
-                android:textSize="21sp"></TextView>
+                android:textColor="@color/white"
+                android:textSize="21sp"></Button>
 
             <TextView
                 android:id="@+id/deviceCStatus"
@@ -138,4 +132,19 @@
         </LinearLayout>
 
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/countAllData"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_marginTop="100dp"
+        android:textSize="22sp"
+        android:layout_height="wrap_content"
+        android:text="TextView" />
+    <Button
+        android:id="@+id/startServerFor4thDevice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Start Server"
+        android:layout_gravity="center"></Button>
 </LinearLayout>
